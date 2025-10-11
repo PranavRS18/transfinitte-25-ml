@@ -1,11 +1,10 @@
+import sys
 from utils.model.init import Retriever
 import requests
 import json
 
-# 1️⃣ Create retriever instance
+# Create retriever and embed documents once
 retr = Retriever()
-
-# 2️⃣ Embed your documents
 docs = [
     "Python is a programming language.",
     "FastAPI is a modern web framework for building APIs.",
@@ -13,12 +12,10 @@ docs = [
 ]
 retr.embed_documents(docs)
 
-# 3️⃣ RAG answer function
 def rag_answer(user_prompt):
-    # Use retriever instance
+    # Retrieve relevant documents
     result = retr.retrieve(user_prompt, top_k=2)
     system_prompt = result["system_prompt"]
-    context = result["context"]
 
     data = {
         "model": "llama3.2:1b",
@@ -31,18 +28,21 @@ def rag_answer(user_prompt):
 
     response = requests.post(
         "http://localhost:11434/v1/chat/completions",
-        json=data,  # simpler than data=json.dumps()
+        json=data,
         timeout=30
     )
-
     return response.json()["choices"][0]["message"]["content"]
 
-
-# 4️⃣ Test
+# Read user prompt from stdin (sent by Node.js)
 if __name__ == "__main__":
-    prompt = "Explain what FastAPI is in simple words."
+    prompt = sys.stdin.read().strip()
+    if not prompt:
+        print("Error: No prompt received")
+        sys.exit(1)
+
     try:
         answer = rag_answer(prompt)
-        print("✅ LLM Answer:\n", answer)
-    except requests.exceptions.ConnectionError:
-        print("❌ Ollama server not running! Run:\nollama run llama3.2:1b")
+        print(answer)
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to Ollama: {e}")
+        sys.exit(1)
