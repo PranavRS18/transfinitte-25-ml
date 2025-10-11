@@ -1,2 +1,71 @@
 # Env Files
-env
+env# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py.class
+
+# ===== Virtual Environment =====
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+
+# ===== IDE / Editors =====
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===== OS Files =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs and Cache =====
+*.log
+*.pot
+*.pyc
+*.pkl
+*.db
+*.sqlite3
+.cache/
+pytest_cache/
+coverage.xml
+htmlcov/
+
+# ===== Environment Variables =====
+.env
+.env.local
+.env.*.local
+
+# ===== Distribution / Packaging =====
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# ===== Jupyter / IPython =====
+.ipynb_checkpoints/
+*.ipynb
+
+# ===== Temporary Files =====
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+
+# ===== Node / Frontend (if any) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Misc =====
+*.zip
+*.tar
+*.gz
+*.rar
