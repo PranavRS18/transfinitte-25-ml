@@ -104,7 +104,7 @@ def rag_query(user_id, query, model_name="llama3.2:1b", top_k=2):
         }
     else:
         # --- Ollama local model ---
-        url = "http://localhost:11434/v1/chat/completions"
+        url = OLLAMA_API_URL
         data = {
             "model": model_name,
             "messages": [

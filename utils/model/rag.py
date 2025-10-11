@@ -27,7 +27,7 @@ def rag_answer(user_prompt, model="ollama"):
             ],
             "max_tokens": 200
         }
-        url = "http://localhost:11434/v1/chat/completions"
+        url = OLLAMA_API_URL
 
     elif model == "gemini":
         # Gemini API (Google Generative Language)
