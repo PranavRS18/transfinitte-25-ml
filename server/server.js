@@ -54,26 +54,34 @@ app.post("/api/summarize", (req, res) => {
 
 
 
+// Route to add documents for a user
 app.post("/api/add-docs", async (req, res) => {
   const { user_id, documents } = req.body;
-  if (!user_id || !documents) return res.status(400).json({ error: "user_id and documents required" });
+  if (!user_id || !documents || !Array.isArray(documents)) {
+    return res.status(400).json({ error: "user_id and documents (array) required" });
+  }
 
   try {
-    // Call Python script via child_process
-    const py = spawn("python", ["-c", `
-import sys, json
-sys.path.append("..")  # go to project root
-from utils.model.user_rag import add_documents
-result = add_documents("${user_id}", ${JSON.stringify(documents)})
-print(json.dumps(result))
-    `]);
+    const pythonScript = path.join(__dirname, "../utils/model/user_rag.py");
+
+    const py = spawn("python", [pythonScript, "add", user_id, JSON.stringify(documents)]);
 
     let output = "";
-    py.stdout.on("data", (data) => { output += data.toString(); });
-    py.stderr.on("data", (data) => { console.error(data.toString()); });
+    let error = "";
 
-    py.on("close", () => {
-      res.json(JSON.parse(output));
+    py.stdout.on("data", (data) => { output += data.toString(); });
+    py.stderr.on("data", (data) => { error += data.toString(); });
+
+    py.on("close", (code) => {
+      if (code !== 0 || error) {
+        console.error("Python error:", error);
+        return res.status(500).json({ error: error || "Python script failed" });
+      }
+      try {
+        res.json(JSON.parse(output));
+      } catch (parseErr) {
+        res.status(500).json({ error: "Failed to parse Python output" });
+      }
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -82,24 +90,37 @@ print(json.dumps(result))
 
 // Route to query RAG
 app.post("/api/query", async (req, res) => {
-  const { user_id, query } = req.body;
-  if (!user_id || !query) return res.status(400).json({ error: "user_id and query required" });
+  const { user_id, query, model_name } = req.body;
+  if (!user_id || !query || !model_name)
+    return res.status(400).json({ error: "user_id, query, and model_name required" });
 
   try {
-    const py = spawn("python", ["-c", `
-import sys, json
-sys.path.append("..")
-from utils.model.user_rag import rag_query
-result = rag_query("${user_id}", "${query}")
-print(json.dumps(result))
-    `]);
+    const pythonScript = path.join(__dirname, "../utils/model/user_rag.py");
+
+    const py = spawn("python", [
+      pythonScript,
+      "query",
+      user_id,
+      query,
+      model_name // send as model_name to match Python
+    ]);
 
     let output = "";
-    py.stdout.on("data", (data) => { output += data.toString(); });
-    py.stderr.on("data", (data) => { console.error(data.toString()); });
+    let error = "";
 
-    py.on("close", () => {
-      res.json(JSON.parse(output));
+    py.stdout.on("data", (data) => { output += data.toString(); });
+    py.stderr.on("data", (data) => { error += data.toString(); });
+
+    py.on("close", (code) => {
+      if (code !== 0 || error) {
+        console.error("Python error:", error);
+        return res.status(500).json({ error: error || "Python script failed" });
+      }
+      try {
+        res.json(JSON.parse(output));
+      } catch (parseErr) {
+        res.status(500).json({ error: "Failed to parse Python output" });
+      }
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
