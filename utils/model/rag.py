@@ -2,21 +2,27 @@ import sys
 import requests
 import json
 from utils.model.init import Retriever
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # --- Initialize retriever (but don't embed anything yet) ---
 retr = Retriever()
 
 def embed_user_docs(docs):
     """Embed documents provided later by the user."""
-    retr.embed_documents(docs)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap = 50
+    )
+    chunks = splitter.split_text(text)
+    retr.embed_documents(chunks)
 
-def rag_answer(user_prompt, model="ollama"):
+def rag_answer(user_prompt, model = "ollama"):
     """Perform retrieval + generation using the specified model."""
     # Retrieve relevant documents
     result = retr.retrieve(user_prompt, top_k=2)
     system_prompt = result.get("system_prompt", "You are a helpful assistant.")
 
-    # ---- Choose backend ----
+    # ---- Choose Backend ----
     if model == "ollama":
         # Ollama API (local)
         data = {
@@ -46,7 +52,7 @@ def rag_answer(user_prompt, model="ollama"):
 
     # ---- Send request ----
     try:
-        response = requests.post(url, json=data, timeout=40)
+        response = requests.post(url, json = data, timeout = 40)
         response.raise_for_status()
         resp_json = response.json()
 

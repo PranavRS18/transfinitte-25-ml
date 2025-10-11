@@ -12,11 +12,11 @@ USER_INDEX_DIR = os.path.join(os.path.dirname(__file__), "user_indices")
 os.makedirs(USER_INDEX_DIR, exist_ok=True)
 
 # --- Helper path builders ---
-def get_index_path(user_id):
-    return os.path.join(USER_INDEX_DIR, f"{user_id}_index.faiss")
+def get_index_path(userId):
+    return os.path.join(USER_INDEX_DIR, f"{userId}_index.faiss")
 
-def get_doc_path(user_id):
-    return os.path.join(USER_INDEX_DIR, f"{user_id}_docs.json")
+def get_doc_path(userId):
+    return os.path.join(USER_INDEX_DIR, f"{userId}_docs.json")
 
 
 class Retriever:
@@ -35,18 +35,18 @@ class Retriever:
         self.index.add(embeddings)
         return self.index
 
-    def save_index(self, user_id):
+    def save_index(self, userId):
         """Save FAISS index + docs to disk."""
         if self.index is None:
             raise ValueError("Index not built.")
-        faiss.write_index(self.index, get_index_path(user_id))
-        with open(get_doc_path(user_id), "w", encoding="utf-8") as f:
+        faiss.write_index(self.index, get_index_path(userId))
+        with open(get_doc_path(userId), "w", encoding="utf-8") as f:
             json.dump(self.documents, f)
 
-    def load_index(self, user_id):
+    def load_index(self, userId):
         """Load FAISS index + docs from disk."""
-        index_path = get_index_path(user_id)
-        doc_path = get_doc_path(user_id)
+        index_path = get_index_path(userId)
+        doc_path = get_doc_path(userId)
         if not os.path.exists(index_path) or not os.path.exists(doc_path):
             return False
         self.index = faiss.read_index(index_path)
@@ -73,21 +73,21 @@ class Retriever:
 
 
 # --- Document management ---
-def add_documents(user_id, documents):
+def add_documents(userId, documents):
     """Add or update documents for a user."""
     retr = Retriever()
-    retr.load_index(user_id)
+    retr.load_index(userId)
     retr.documents.extend(documents)
     retr.embed_documents(retr.documents)
-    retr.save_index(user_id)
-    return {"status": "success", "message": f"{len(documents)} documents added for {user_id}"}
+    retr.save_index(userId)
+    return {"status": "success", "message": f"{len(documents)} documents added for {userId}"}
 
 
-# --- Model-agnostic RAG Query ---
-def rag_query(user_id, query, model_name="llama3.2:1b", top_k=2):
+# --- Model-Agnostic RAG Query ---
+def rag_query(userId, query, model_name="llama3.2:1b", top_k=2):
     retr = Retriever()
-    if not retr.load_index(user_id):
-        return {"error": f"No documents found for user {user_id}"}
+    if not retr.load_index(userId):
+        return {"error": f"No documents found for user {userId}"}
 
     result = retr.retrieve(query, top_k)
     context = result["context"]
@@ -138,14 +138,14 @@ if __name__ == "__main__":
     action = sys.argv[1]  # "add" or "query"
 
     if action == "add":
-        user_id = sys.argv[2]
+        userId = sys.argv[2]
         documents = json.loads(sys.argv[3])
-        result = add_documents(user_id, documents)
+        result = add_documents(userId, documents)
         print(json.dumps(result))
 
     elif action == "query":
-        user_id = sys.argv[2]
+        userId = sys.argv[2]
         query = sys.argv[3]
         model_name = sys.argv[4]
-        result = rag_query(user_id, query, model_name=model_name)
+        result = rag_query(userId, query, model_name=model_name)
         print(json.dumps(result))
