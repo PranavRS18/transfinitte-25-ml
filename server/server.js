@@ -16,44 +16,43 @@ app.get("/", (req, res) => {
   res.send("Hello! Server is running.");
 });
 app.post("/api/summarize", (req, res) => {
-  const { text } = req.body;
+  const { text, model_name } = req.body;
   if (!text) return res.status(400).json({ error: "Text is required" });
 
-  // Path to your Python script
-  const pythonScript = path.join(
-    __dirname,
-    "../utils/model/summarise.py"
-  );
+  // Automatically set provider based on model_name
+  let provider = "ollama";
+  if (model_name && model_name.toLowerCase().includes("gemini")) {
+    provider = "gemini";
+  }
+  console.log(provider)
 
-  // Spawn a Python process
-  const pyProcess = spawn("python", [pythonScript]);
+  const pythonScript = path.join(__dirname, "../utils/model/summarise.py");
+
+  // Spawn Python process
+  const pyProcess = spawn("python", [pythonScript, provider, model_name || "llama3.2:1b", text]);
 
   let result = "";
   let error = "";
 
-  // Send text to Python via stdin
-  pyProcess.stdin.write(`${text}\n`);
-  pyProcess.stdin.end();
-
-  // Capture Python stdout
   pyProcess.stdout.on("data", (data) => {
     result += data.toString();
   });
 
-  // Capture Python stderr
   pyProcess.stderr.on("data", (data) => {
     error += data.toString();
   });
 
-  // When Python finishes
   pyProcess.on("close", (code) => {
     if (code !== 0 || error) {
       console.error("Python error:", error);
-      return res.status(500).json({ error: "Python script failed" });
+      return res.status(500).json({ error: "Python script failed", details: error });
     }
+
     res.json({ summary: result.trim() });
   });
 });
+
+
 
 app.post("/api/add-docs", async (req, res) => {
   const { user_id, documents } = req.body;
