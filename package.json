@@ -2,6 +2,7 @@
   "name": "transfinitte-25-ml",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "format": "prettier --write \"*.{ts,tsx,js,jsx,json,md,css,scss}\"",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,10 +1,14 @@
-const express = require('express');
-const path = require('path');
-const { spawn } = require('child_process');
-const app = express();
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 import 'dotenv/config';
 
+const app = express();
 const PORT = process.env.PORT || 5000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(express.json());
@@ -16,23 +20,26 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/summarize', (req, res) => {
-  const { text, model_name } = req.body;
+  let { text, model_name } = req.body;
   if (!text) return res.status(400).json({ error: 'Text is required' });
 
-  // Automatically set provider based on model_name
+  if (!model_name) model_name = 'llama3.2:1b';
+
+  // Set Provider based on model_name
   let provider = 'ollama';
   if (model_name && model_name.toLowerCase().includes('gemini')) {
     provider = 'gemini';
   }
+  console.log(`Provider: ${provider}, Model: ${model_name}, Text: ${text}`);
 
   const pythonScript = path.join(__dirname, './utils/model/summarizer.py');
 
   // Spawn Python process
-  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b', text]);
+  const pyProcess = spawn('python', [pythonScript, provider, model_name, text]);
 
   let result = '';
   let error = '';
-
+  
   pyProcess.stdout.on('data', (data) => {
     result += data.toString();
   });
@@ -46,8 +53,8 @@ app.post('/api/summarize', (req, res) => {
       console.error('Python error:', error);
       return res.status(500).json({ error: 'Python script failed', details: error });
     }
-
-    res.json({ result: result.trim() });
+    console.log("Result: ", result);
+    res.json({ summary: result.trim() });
   });
 });
 

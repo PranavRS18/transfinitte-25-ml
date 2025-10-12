@@ -12,7 +12,7 @@ if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY environment variable not set.", file = sys.stderr)
     sys.exit(1)
 
-client = genai.Client(GEMINI_API_KEY = GEMINI_API_KEY)
+client = genai.Client(api_key = GEMINI_API_KEY)
 
 # --- Ollama Setup ---
 OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
@@ -42,29 +42,13 @@ def chatbot_ollama(text, model_name = "llama3.2:1b"):
 
 # --- Gemini Chatbot ---
 def chatbot_gemini(text, model_name = "gemini-2.5-flash"):
-    try:      
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "You are an intelligent, helpful, and concise chatbot. "
-                    "You answer questions clearly and politely, provide examples when helpful, "
-                    "and admit if you don’t know something. "
-                    "Avoid making up facts. Keep responses friendly and concise."
-                )
-            },
-            {
-                "role": "user",
-                "content": text
-            }
-        ]
-        response = genai.chat.create(
-            model="gemini-2.5-flash",
-            messages=messages,
-            temperature=0.3,
-            max_output_tokens=150
-        )
-        return response.last.output_text.strip() if response.last.output_text else None
+    try:
+        prompt = text
+        response = client.models.generate_content(model = model_name, contents = prompt)
+        return response.text.strip() if response.text else None
+    except Exception as e:
+        print(f"Gemini error ({model_name}): {e}", file=sys.stderr)
+        return None
 
     except Exception as e:
         print(f"Gemini error ({model_name}): {e}", file = sys.stderr)
@@ -93,8 +77,6 @@ if __name__ == "__main__":
     text = " ".join(sys.argv[3:])
 
     summary = chatbot_any(text, provider = provider, model_name = model_name)
-    if summary:
-        print(summary)
-    else:
+    if not summary:
         print("Error: ChatBot failed", file = sys.stderr)
         sys.exit(1)

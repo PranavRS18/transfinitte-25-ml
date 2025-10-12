@@ -6,7 +6,7 @@ from google import genai
 from dotenv import load_dotenv
 load_dotenv()
 
-# --- Gemini Setuo ---
+# --- Gemini Setup ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY environment variable not set.", file = sys.stderr)
@@ -44,7 +44,7 @@ def summarise_ollama(text, model_name = "llama3.2:1b"):
 def summarise_gemini(text, model_name = "gemini-2.5-flash"):
     try:
         prompt = f"Summarize the following text: \n{text}"
-        response = client.models.generate_content(model = model_name, contents = prompt, max_output_tokens = 150)
+        response = client.models.generate_content(model = model_name, contents = prompt)
         return response.text.strip() if response.text else None
     except Exception as e:
         print(f"Gemini error ({model_name}): {e}", file=sys.stderr)
@@ -73,6 +73,7 @@ if __name__ == "__main__":
     text = " ".join(sys.argv[3:])
 
     summary = summarise_any(text, provider = provider, model_name = model_name)
+
     if summary:
         print(summary)
     else:
