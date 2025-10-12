@@ -50,11 +50,6 @@ def chatbot_gemini(text, model_name = "gemini-2.5-flash"):
         print(f"Gemini error ({model_name}): {e}", file=sys.stderr)
         return None
 
-    except Exception as e:
-        print(f"Gemini error ({model_name}): {e}", file = sys.stderr)
-        return None
-
-
 # --- Fallback ChatBot ---
 def chatbot_any(text, provider = "ollama", model_name = None):
     if provider.lower() == "ollama":
@@ -76,7 +71,9 @@ if __name__ == "__main__":
     model_name = sys.argv[2]
     text = " ".join(sys.argv[3:])
 
-    summary = chatbot_any(text, provider = provider, model_name = model_name)
-    if not summary:
+    reply = chatbot_any(text, provider = provider, model_name = model_name)
+    if reply:
+        print(reply)
+    else:   
         print("Error: ChatBot failed", file = sys.stderr)
         sys.exit(1)

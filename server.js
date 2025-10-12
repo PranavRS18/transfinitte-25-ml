@@ -30,7 +30,6 @@ app.post('/api/summarize', (req, res) => {
   if (model_name && model_name.toLowerCase().includes('gemini')) {
     provider = 'gemini';
   }
-  console.log(`Provider: ${provider}, Model: ${model_name}, Text: ${text}`);
 
   const pythonScript = path.join(__dirname, './utils/model/summarizer.py');
 
@@ -53,7 +52,6 @@ app.post('/api/summarize', (req, res) => {
       console.error('Python error:', error);
       return res.status(500).json({ error: 'Python script failed', details: error });
     }
-    console.log("Result: ", result);
     res.json({ summary: result.trim() });
   });
 });
@@ -71,7 +69,10 @@ app.post('/api/chatbot', (req, res) => {
   const pythonScript = path.join(__dirname, './utils/model/chatbot.py');
 
   // Spawn Python process
-  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b', text]);
+  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b']);
+
+  pyProcess.stdin.write(text);
+  pyProcess.stdin.end();
 
   let result = '';
   let error = '';
@@ -89,7 +90,6 @@ app.post('/api/chatbot', (req, res) => {
       console.error('Python error:', error);
       return res.status(500).json({ error: 'Python script failed', details: error });
     }
-
     res.json({reply: result.trim() });
   });
 });
