@@ -31,6 +31,19 @@ class Retriever:
         self.index = faiss.IndexFlatL2(dim)
         self.index.add(embeddings)
 
+    def add_documents(self, new_documents: list):
+        """
+        Add new documents to the existing index.
+
+        Args:
+            new_documents (list[str]): List of new document strings to embed and add.
+        """
+        if not new_documents:
+            return
+
+        combined_docs = self.documents + new_documents
+        self.embed_documents(combined_docs)
+
     def retrieve(self, query: str, top_k: int = 2) -> dict:
         """
         Retrieve top-K most similar documents for a query.
@@ -69,14 +82,14 @@ class Retriever:
 
 # ----------------- Example Usage -----------------
 if __name__ == "__main__":
-    docs = [
-        "Python is a programming language.",
-        "FastAPI is a modern web framework for building APIs.",
-        "The earth revolves around the sun.",
-    ]
-
     retriever = Retriever()
-    retriever.embed_documents(docs)
 
-    result = retriever.retrieve("What is FastAPI?", top_k=2)
-    print("Retrieved Documents:", result["retrieved_docs"])
+    # Dynamically add documents later instead of hardcoding
+    # retriever.embed_documents(["Your documents here..."])
+
+    # Example query (will fail if no documents are added)
+    try:
+        result = retriever.retrieve("What is FastAPI?", top_k=2)
+        print("Retrieved Documents:", result["retrieved_docs"])
+    except ValueError as e:
+        print("Error:", e)
