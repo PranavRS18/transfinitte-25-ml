@@ -3,15 +3,20 @@ import requests
 import json
 from utils.model.init import Retriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
+import os
+from dotenv import load_dotenv
 # --- Initialize retriever (but don't embed anything yet) ---
 retr = Retriever()
 
+OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 def embed_user_docs(text):
     """Embed documents provided later by the user."""
+    print("Embedding user documents...", text)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
-        chunk_overlap = 50
+        chunk_overlap=50
     )
     chunks = splitter.split_text(text)
     retr.embed_documents(chunks)
