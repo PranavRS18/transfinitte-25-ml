@@ -3,7 +3,11 @@ import json
 import faiss
 import requests
 import sys
+from dotenv import load_dotenv
+load_dotenv()
 
+OLLAMA_API_URL = os.getenv("OLLAMA_API_URL")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 from sentence_transformers import SentenceTransformer
 
@@ -96,7 +100,7 @@ def rag_query(userId, query, model_name="llama3.2:1b", top_k=2):
     # --- Determine provider ---
     if "gemini" in model_name.lower():
         # --- Gemini API ---
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key=AIzaSyDgxIc3UsBdft3UjGTGBnuqex5epK9APcc"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
         data = {
             "contents": [
                 {"parts": [{"text": f"{system_prompt}\nContext:\n{context}\n\nQuestion: {query}"}]}

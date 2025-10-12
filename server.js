@@ -101,10 +101,10 @@ app.post('/api/add-docs', async (req, res) => {
   }
 
   try {
-    const pythonScript = path.join(__dirname, '../utils/model/rag_user.py');
+    const pythonScript = path.join(__dirname, './utils/model/rag_user.py');
 
     // Spawn Python process
-    const pyProcess = spawn('python', [pythonScript, 'add_text', userId, text]);
+    const pyProcess = spawn('python', [pythonScript, 'add', userId, text]);
 
     let output = '';
     let error = '';
@@ -123,7 +123,7 @@ app.post('/api/add-docs', async (req, res) => {
         return res.status(500).json({ error: error || 'Python script failed' });
       }
       try {
-        res.json({ success: true });
+        res.json({ success: output ? true : false });
       } catch (parseErr) {
         res.status(500).json({ error: 'Failed to parse Python output' });
       }
@@ -140,7 +140,7 @@ app.post('/api/query', async (req, res) => {
     return res.status(400).json({ error: 'userId, query, and model_name required' });
 
   try {
-    const pythonScript = path.join(__dirname, '../utils/model/rag_user.py');
+    const pythonScript = path.join(__dirname, './utils/model/rag_user.py');
 
     const py = spawn('python', [
       pythonScript,
