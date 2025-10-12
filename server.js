@@ -135,7 +135,7 @@ app.post('/api/add-docs', async (req, res) => {
 
 // Route to Query RAG
 app.post('/api/query', async (req, res) => {
-  const { userId, query, model_name } = req.body;
+  const { userId, query, model_name,db } = req.body;
   if (!userId || !query || !model_name)
     return res.status(400).json({ error: 'userId, query, and model_name required' });
 
@@ -147,7 +147,8 @@ app.post('/api/query', async (req, res) => {
       'query',
       userId,
       query,
-      model_name, // send as model_name to match Python Script
+      model_name,
+      db // send as model_name to match Python Script
     ]);
 
     let output = '';

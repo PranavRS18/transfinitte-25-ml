@@ -1,8 +1,8 @@
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
-
-
+import os
+from pinecone import Pinecone
 class Retriever:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         """
@@ -11,6 +11,7 @@ class Retriever:
         self.embedding_model = SentenceTransformer(model_name)
         self.index = None
         self.documents = []
+        
 
     def embed_documents(self, documents: list):
         """
