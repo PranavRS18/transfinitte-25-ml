@@ -15,7 +15,7 @@ def embed_user_docs(text):
     """Embed documents provided later by the user."""
     print("Embedding user documents...", text)
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
+        chunk_size=150,
         chunk_overlap=50
     )
     chunks = splitter.split_text(text)

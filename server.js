@@ -69,7 +69,10 @@ app.post('/api/chatbot', (req, res) => {
   const pythonScript = path.join(__dirname, './utils/model/chatbot.py');
 
   // Spawn Python process
-  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b', text]);
+  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b']);
+
+  pyProcess.stdin.write(text);
+  pyProcess.stdin.end();
 
   let result = '';
   let error = '';
