@@ -7,7 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 # --- Initialize retriever (but don't embed anything yet) ---
 retr = Retriever()
 
-def embed_user_docs(docs):
+def embed_user_docs(text):
     """Embed documents provided later by the user."""
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
