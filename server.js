@@ -69,10 +69,7 @@ app.post('/api/chatbot', (req, res) => {
   const pythonScript = path.join(__dirname, './utils/model/chatbot.py');
 
   // Spawn Python process
-  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b']);
-
-  pyProcess.stdin.write(text);
-  pyProcess.stdin.end();
+  const pyProcess = spawn('python', [pythonScript, provider, model_name || 'llama3.2:1b', text]);
 
   let result = '';
   let error = '';
@@ -96,10 +93,10 @@ app.post('/api/chatbot', (req, res) => {
 // Route to Add Documents to VectorDB
 app.post('/api/add-docs', async (req, res) => {
   const { userId, text } = req.body;
+
   if (!userId || !text) {
     return res.status(400).json({ error: 'userId and text required' });
   }
-  console.log("text",text);
   try {
     const pythonScript = path.join(__dirname, './utils/model/rag_user.py');
 
@@ -135,7 +132,7 @@ app.post('/api/add-docs', async (req, res) => {
 
 // Route to Query RAG
 app.post('/api/query', async (req, res) => {
-  const { userId, query, model_name,db } = req.body;
+  const { userId, query, model_name } = req.body;
   if (!userId || !query || !model_name)
     return res.status(400).json({ error: 'userId, query, and model_name required' });
 
@@ -148,7 +145,7 @@ app.post('/api/query', async (req, res) => {
       userId,
       query,
       model_name,
-      db // send as model_name to match Python Script
+      "faiss"
     ]);
 
     let output = '';
@@ -167,7 +164,7 @@ app.post('/api/query', async (req, res) => {
         return res.status(500).json({ error: error || 'Python script failed' });
       }
       try {
-        res.json(JSON.parse(output));
+        res.json({result: JSON.parse(output)["answer"]});
       } catch (parseErr) {
         res.status(500).json({ error: 'Failed to parse Python output' });
       }

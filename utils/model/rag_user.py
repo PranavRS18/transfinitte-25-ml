@@ -114,7 +114,7 @@ class Retriever:
         else:
             raise ValueError("Invalid backend. Choose 'pinecone' or 'faiss'.")
 
-        system_prompt = "You are a helpful assistant. Use the following context to answer accurately:\n\n"
+        system_prompt = "You are a helpful assistant. Use the following context to answer accurately: (Limit your answer to 10 words)\n\n"
         context = "\n\n".join(retrieved_docs)
 
         return {
@@ -209,6 +209,7 @@ if __name__ == "__main__":
         userId = sys.argv[2]
         query = sys.argv[3]
         model_name = sys.argv[4]
-        backend=sys.argv[5] if len(sys.argv) > 5 else "pinecone"
-        result = rag_query(userId, query, model_name=model_name, backend=backend)
+        db = sys.argv[5] if len(sys.argv) > 5 else "pinecone"
+
+        result = rag_query(userId, query, model_name = model_name, backend = db)
         print(json.dumps(result))
