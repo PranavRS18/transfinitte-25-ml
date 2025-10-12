@@ -5,6 +5,7 @@ from utils.model.init import Retriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
 from dotenv import load_dotenv
+from pinecone import Pinecone
 # --- Initialize retriever (but don't embed anything yet) ---
 retr = Retriever()
 
@@ -24,7 +25,7 @@ def embed_user_docs(text):
 def rag_answer(user_prompt, model = "ollama"):
     """Perform retrieval + generation using the specified model."""
     # Retrieve relevant documents
-    result = retr.retrieve(user_prompt, top_k=2)
+    result = retr.retrieve(user_prompt, top_k=2,backend="pinecone")
     system_prompt = result.get("system_prompt", "You are a helpful assistant.")
 
     # ---- Choose Backend ----
