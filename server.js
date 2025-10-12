@@ -99,7 +99,7 @@ app.post('/api/add-docs', async (req, res) => {
   if (!userId || !text) {
     return res.status(400).json({ error: 'userId and text required' });
   }
-
+  console.log("text",text);
   try {
     const pythonScript = path.join(__dirname, './utils/model/rag_user.py');
 

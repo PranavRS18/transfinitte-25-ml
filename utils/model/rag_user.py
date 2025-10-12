@@ -143,7 +143,15 @@ if __name__ == "__main__":
 
     if action == "add":
         userId = sys.argv[2]
-        documents = json.loads(sys.argv[3])
+        raw_docs = sys.argv[3]
+
+        try:
+            documents = json.loads(raw_docs)
+            if isinstance(documents, str):
+                documents = [documents]
+        except json.JSONDecodeError:
+            documents = [raw_docs]
+
         result = add_documents(userId, documents)
         print(json.dumps(result))
 
