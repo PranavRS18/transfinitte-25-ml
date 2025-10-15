@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     provider = sys.argv[1]
     model_name = sys.argv[2]
-    text = sys.stdin.read().strip()
+    text = " ".join(sys.argv[3:])
 
     summary = summarise_any(text, provider = provider, model_name = model_name)
 
